@@ -17,7 +17,12 @@ resource "aws_apigatewayv2_api" "http_api" {
 resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id           = aws_apigatewayv2_api.http_api.id
   integration_type = "AWS_PROXY" # This is the standard type for Lambda
-  integration_uri  = var.lambda_invoke_arn
+  #
+  # --- THIS IS THE FIX for the 500 error ---
+  # We use the function's main ARN, not its invoke_arn
+  integration_uri  = var.lambda_execution_arn 
+  # --- END FIX ---
+  #
 }
 
 # 3. Create the Route (POST /authorize)

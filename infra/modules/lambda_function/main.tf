@@ -62,13 +62,13 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attach" {
 
 # 4. Zip up our Lambda code from the 'src' directory
 data "archive_file" "lambda_zip" {
-  type        = "zip"
+  type = "zip"
   # This path is relative to this file:
   # ../ (gets out of lambda_function)
   # ../ (gets out of modules)
   # ../ (gets out of infra)
   # src/AuthorizeAccess (goes into the src folder)
-  source_dir  = "../src/AuthorizeAccess" # CORRECTED PATH
+  source_dir  = "../src/AuthorizeAccess" # <-- THIS IS THE CORRECTED PATH
   output_path = "AuthorizeAccess.zip"
 }
 
@@ -85,7 +85,7 @@ resource "aws_lambda_function" "authorize_access" {
   # Pass the DynamoDB table name to the Lambda as an environment variable
   environment {
     variables = {
-      TABLE_NAME = var.dynamodb_table_name # Passed in as aV variable
+      TABLE_NAME = var.dynamodb_table_name # Passed in as a variable
     }
   }
 
