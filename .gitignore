@@ -1,0 +1,24 @@
+# Terraform specific files
+.terraform/
+*.tfstate
+*.tfstate.backup
+crash.log
+*.tfvars
+override.tf
+override.tf.json
+.terraform.lock.hcl
+
+# Sensitive Key Material and Configurations (CRITICAL)
+# Prevent any private keys, certificates, or configuration files containing secrets from being committed
+*.pem
+*.key
+*.crt
+*.p12
+*.ovpn
+kubeconfig
+.kube/
+/infra/vpn-certs/
+# OS/IDE generated files
+.DS_Store
+.idea/
+.vscode/
