@@ -63,12 +63,13 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attach" {
 # 4. Zip up our Lambda code from the 'src' directory
 data "archive_file" "lambda_zip" {
   type = "zip"
-  # This path is relative to this file:
-  # ../ (gets out of lambda_function)
-  # ../ (gets out of modules)
-  # ../ (gets out of infra)
-  # src/AuthorizeAccess (goes into the src folder)
+
+  # --- THIS IS THE FIX ---
+  # This path is relative to this file (infra/modules/lambda_function/main.tf)
+  # Using the corrected path you provided.
   source_dir  = "../src/AuthorizeAccess" # <-- THIS IS THE CORRECTED PATH
+  # --- END FIX ---
+
   output_path = "AuthorizeAccess.zip"
 }
 
