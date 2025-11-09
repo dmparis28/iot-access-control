@@ -56,20 +56,21 @@ resource "aws_iam_policy" "lambda_policy" {
 
 # 3. Attach the Policy to the Role
 resource "aws_iam_role_policy_attachment" "lambda_policy_attach" {
-role       = aws_iam_role.lambda_exec_role.name
+  role       = aws_iam_role.lambda_exec_role.name
   policy_arn = aws_iam_policy.lambda_policy.arn
 }
 
 # 4. Zip up our Lambda code from the 'src' directory
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  # This path was "../../src/AuthorizeAccess"
-  # Because your 'modules' folder is at the root,
-  # the 'src' folder is one level up.
-  source_dir  = "../src/AuthorizeAccess" # CHANGED
+  # This path is relative to this file:
+  # ../ (gets out of lambda_function)
+  # ../ (gets out of modules)
+  # ../ (gets out of infra)
+  # src/AuthorizeAccess (goes into the src folder)
+  source_dir  = "../../../src/AuthorizeAccess" # CORRECTED PATH
   output_path = "AuthorizeAccess.zip"
 }
-
 
 # 5. Create the Lambda Function
 resource "aws_lambda_function" "authorize_access" {
@@ -84,7 +85,7 @@ resource "aws_lambda_function" "authorize_access" {
   # Pass the DynamoDB table name to the Lambda as an environment variable
   environment {
     variables = {
-      TABLE_NAME = var.dynamodb_table_name # Passed in as a variable
+      TABLE_NAME = var.dynamodb_table_name # Passed in as aV variable
     }
   }
 

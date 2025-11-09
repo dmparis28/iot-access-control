@@ -3,4 +3,4 @@ output "api_endpoint_url" {
   value       = aws_apigatewayv2_stage.prod_stage.invoke_url
 }
 
-# DELETED: The entire "api_key_value" output block
+# The "api_key_value" output has been deleted.

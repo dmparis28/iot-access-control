@@ -7,8 +7,4 @@ output "api_endpoint_url" {
   value       = module.http_api.api_endpoint_url
 }
 
-output "api_key_value" {
-  description = "The secret value of the API key for the hardware."
-  value       = module.http_api.api_key_value
-  sensitive   = true # This hides it from the console output
-}
+# The "api_key_value" output has been deleted.
