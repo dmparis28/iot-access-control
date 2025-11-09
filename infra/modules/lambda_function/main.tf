@@ -4,7 +4,6 @@
 resource "aws_iam_role" "lambda_exec_role" {
   name = "${var.project_name}-AuthorizeAccess-Role"
 
-  # This 'assume_role_policy' allows the Lambda service to "wear" this role.
   assume_role_policy = jsonencode({
     Version   = "2012-10-17"
     Statement = [
@@ -42,13 +41,20 @@ resource "aws_iam_policy" "lambda_policy" {
         Resource = "arn:aws:logs:*:*:*"
       },
       {
-        # Allows the Lambda to READ from our specific DynamoDB table
-        # Note: We are not allowing PutItem, DeleteItem, etc. (Least Privilege)
+        # Allows READ from our main AccessCodes table
         Action = [
           "dynamodb:GetItem"
         ]
         Effect   = "Allow"
-        Resource = var.dynamodb_table_arn # Passed in as a variable
+        Resource = var.dynamodb_table_arn # Original table
+      },
+      {
+        # Allows WRITE to our new AccessLogs table
+        Action = [
+          "dynamodb:PutItem"
+        ]
+        Effect   = "Allow"
+        Resource = var.dynamodb_logs_table_arn # New logs table
       }
     ]
   })
@@ -60,16 +66,10 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attach" {
   policy_arn = aws_iam_policy.lambda_policy.arn
 }
 
-# 4. Zip up our Lambda code from the 'src' directory
+# 4. Zip up our Lambda code
 data "archive_file" "lambda_zip" {
-  type = "zip"
-
-  # --- THIS IS THE FIX ---
-  # This path is relative to this file (infra/modules/lambda_function/main.tf)
-  # Using the corrected path you provided.
-  source_dir  = "../src/AuthorizeAccess" # <-- THIS IS THE CORRECTED PATH
-  # --- END FIX ---
-
+  type        = "zip"
+  source_dir  = "../src/AuthorizeAccess" # Path is relative to the infra/ directory
   output_path = "AuthorizeAccess.zip"
 }
 
@@ -77,23 +77,25 @@ data "archive_file" "lambda_zip" {
 resource "aws_lambda_function" "authorize_access" {
   function_name = "${var.project_name}-AuthorizeAccess"
   role          = aws_iam_role.lambda_exec_role.arn
-  handler       = "index.handler" # The file 'index.js' and the exported function 'handler'
+  handler       = "index.handler"
   runtime       = "nodejs18.x"
 
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
-  # Pass the DynamoDB table name to the Lambda as an environment variable
   environment {
     variables = {
-      TABLE_NAME = var.dynamodb_table_name # Passed in as a variable
+      TABLE_NAME      = var.dynamodb_table_name      # Original table
+      LOGS_TABLE_NAME = var.dynamodb_logs_table_name # New logs table
+      
+      # This forces an update on every 'apply' to deploy new code
+      LAST_UPDATED_ON = timestamp()
     }
   }
 
   tags = {
     Project = var.project_name
   }
-
-  # Ensure the role is created before the function
+  
   depends_on = [aws_iam_role_policy_attachment.lambda_policy_attach]
 }

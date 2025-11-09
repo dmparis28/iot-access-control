@@ -1,22 +1,36 @@
-# This is the new root main.tf. It's clean and just calls our modules.
-# This "orchestrates" the other modules.
+# This orchestrates all our modules.
 
-# 1. DynamoDB Table
+# 1. DynamoDB Table (for Access Codes)
 module "access_table" {
   source       = "./modules/dynamodb_table"
   project_name = var.project_name
 }
 
-# 2. Lambda Function
+# --- ADDED FOR LOGGING ---
+# 2. DynamoDB Table (for Access Logs)
+module "access_logs_table" {
+  source       = "./modules/dynamodb_logs_table"
+  project_name = var.project_name
+}
+# --- END ADDED ---
+
+# 3. Lambda Function
 module "authorize_access_lambda" {
   source       = "./modules/lambda_function"
   project_name = var.project_name
-  # We pass the table name from our first module into our second.
+  
+  # Original table
   dynamodb_table_name = module.access_table.table_name
   dynamodb_table_arn  = module.access_table.table_arn
+
+  # --- ADDED FOR LOGGING ---
+  # New logs table
+  dynamodb_logs_table_name = module.access_logs_table.table_name
+  dynamodb_logs_table_arn  = module.access_logs_table.table_arn
+  # --- END ADDED ---
 }
 
-# 3. API Gateway
+# 4. API Gateway
 module "http_api" {
   source                  = "./modules/api_gateway"
   project_name            = var.project_name

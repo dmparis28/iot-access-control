@@ -1,4 +1,4 @@
-# This file defines our public-facing API, the route, and the API key.
+# This file defines our public-facing API and the route.
 
 # 1. Create the API Gateway (HTTP API - cheaper and faster)
 resource "aws_apigatewayv2_api" "http_api" {
@@ -17,7 +17,7 @@ resource "aws_apigatewayv2_api" "http_api" {
 resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id           = aws_apigatewayv2_api.http_api.id
   integration_type = "AWS_PROXY" # This is the standard type for Lambda
-  integration_uri  = var.lambda_execution_arn
+  integration_uri  = var.lambda_execution_arn 
 }
 
 # 3. Create the Route (POST /authorize)
@@ -25,9 +25,10 @@ resource "aws_apigatewayv2_route" "authorize_route" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "POST /authorize" # This is our hardware endpoint
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
-  # We will add a WAF later (in Phase 4)
+  
+  # api_key_required = true has been removed as it's not supported
+  # by HTTP APIs. We will use a WAF in Phase 4.
   authorization_type = "NONE"
-  # api_key_required has been removed
 }
 
 # 4. Create a "Stage" (e.g., 'prod') to deploy the API
@@ -47,9 +48,6 @@ resource "aws_lambda_permission" "api_gw_permission" {
   action        = "lambda:InvokeFunction"
   function_name = var.lambda_function_name
   principal     = "apigateway.amazonaws.com"
-
-  # This source_arn restricts the permission to our specific API
-  source_arn = "${aws_apigatewayv2_api.http_api.execution_arn}/*/${aws_apigatewayv2_route.authorize_route.route_key}"
+  # This ARN grants permission for any route ("*") on the 'prod' stage
+  source_arn = "${aws_apigatewayv2_api.http_api.execution_arn}/${aws_apigatewayv2_stage.prod_stage.name}/*"
 }
-
-# Sections 6, 7, and 8 for API keys and usage plans have been deleted.

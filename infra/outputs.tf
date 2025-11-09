@@ -6,5 +6,3 @@ output "api_endpoint_url" {
   description = "The URL for the deployed API Gateway (prod stage)."
   value       = module.http_api.api_endpoint_url
 }
-
-# The "api_key_value" output has been deleted.
