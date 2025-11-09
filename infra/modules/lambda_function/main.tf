@@ -68,7 +68,7 @@ data "archive_file" "lambda_zip" {
   # ../ (gets out of modules)
   # ../ (gets out of infra)
   # src/AuthorizeAccess (goes into the src folder)
-  source_dir  = "../../../src/AuthorizeAccess" # CORRECTED PATH
+  source_dir  = "../src/AuthorizeAccess" # CORRECTED PATH
   output_path = "AuthorizeAccess.zip"
 }
 
