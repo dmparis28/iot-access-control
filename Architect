@@ -1,0 +1,48 @@
+Here is the updated, consolidated plan.
+I have integrated the four new systems (Verification, Optimization, Feedback, and Insight) and added the new specialist agents to the roster.
+Consolidated AI Agent Platform Architecture (v4.0)
+1. Compute: GKE Autoscale-Pool
+A single Google Kubernetes Engine (GKE) Cluster provides compute via autoscaling node pools.
+ * cpu-pool (Low Lane): min: 1, max: 10. For system components & low-compute agents.
+ * medium-gpu-pool (Medium Lane): NVIDIA L4 GPUs. min: 0, max: 10. For 90% of tasks. Idles at $0.
+ * high-gpu-pool (High Lane): NVIDIA H100 GPUs. min: 0, max: 5 (quota-dependent). For "Extreme Power" tasks. Idles at $0.
+2. AI & Orchestration
+ * Brains: Vertex AI API (Gemini 2.5 Pro).
+ * Orchestrator: Cloud Workflows (Manages high-level business logic).
+ * Dispatcher: GKE Autoscaler (Triggers node provisioning based on Kubernetes Job manifests).
+ * Mode: Parallel job dispatch ("Agentic Swarm") for high-speed, high-quality production.
+3. Enterprise Guardrail Framework (Safety)
+A 3-layer defense against loops, overspending, and errors.
+ * L1: Agent Constitution (Prompt): Non-negotiable backstory rules (e.g., "Rule 1 (COST): You MUST NOT write code that polls in a loop").
+ * L2: Agent Grading (Test): An "Adversarial Test Suite" (using pytest) with "trap scenarios" to certify agents before deployment.
+ * L3: Circuit Breakers (Code): Hard-coded safety limits (max_iter=5, timeout=120s, and real-time cost logging).
+4. Agent Support Systems (NEW)
+These systems enable a performance-based, scalable, and intelligent swarm.
+ * 1. Verification System (SRE Agent):
+   * Agent: SRE_Agent.
+   * Tool: k6 / Locust load-testing tool.
+   * Job: After code passes QA, this agent automatically benchmarks it against scalability targets (e.g., <300ms p99 latency) before it can be approved.
+ * 2. Optimization System (Triage Agent):
+   * Agent: Triage_Agent (runs in cpu-pool).
+   * Job: The first agent in all workflows. It reads a task, estimates its complexity (e.g., "7/10"), and dynamically routes it to the correct compute lane (cpu-pool, medium-gpu-pool, or high-gpu-pool) to ensure maximum cost-efficiency.
+ * 3. Feedback System (Human-in-the-Loop):
+   * Interface: "Approve" / "Reject" buttons in the React UI for the final human review.
+   * Job: A "Reject" action (with a correction) automatically packages the failure (bad code + your correction) and sends it to two places:
+     * The "Grading Rubric" as a new, failing test case.
+     * The "Insight System" as a high-priority "memory" of what not to do.
+ * 4. Insight System (Shared Contextual Memory):
+   * Components: git (for code state) + Vector Search (for "RAG") + Knowledge Graph (for "reasoning").
+   * Agent: Librarian_Agent.
+   * Job: This agent ingests all project documents (architecture.md, etc.) and code. It populates the Vector Search for semantic recall ("Show me docs about...") and the Knowledge Graph for relationship-based insight ("Show me what breaks if I change..."). All agents query this system to stay "synced" with the project scope.
+5. Security & Interface
+ * UI: Mobile-responsive React web app.
+ * Front Door: API Gateway + Firebase Auth (Authenticates user).
+ * Internal Auth 1: Workload Identity (Keyless GKE auth for Cloud Workflows).
+ * Internal Auth 2: Anthos Service Mesh (Enforces strict mTLS for all pod-to-pod agent communication).
+6. Core Agent Roster
+ * Project Agents: Product_Manager, Project_Manager (Triage), Architect.
+ * Development Agents: Frontend_Dev, Backend_Dev, DBA_Agent, Networking_Agent.
+ * Support Agents: Librarian_Agent (Insight), SRE_Agent (Verification).
+ * QA Agents: QA_Agent (Testing), Debugger_Agent, Cybersecurity_Auditor.
+ * Deployment Agents: CI/CD_Agent, Doc_Writer_Agent.
+
